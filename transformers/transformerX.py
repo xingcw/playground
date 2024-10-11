@@ -175,20 +175,24 @@ class PositionalEncoding(nn.Module):
 class TransformerX(nn.Module):
 
     def __init__(self, num_layer=12, num_head=12, emd_dim=768, 
-                 ffn_hidden_size=2048, vocab_size=50000, learned_pos_embed=False):
+                 ffn_hidden_size=2048, vocab_enc_size=50000, vocab_dec_size=50000, learned_pos_embed=False):
         super(TransformerX, self).__init__()
 
         self.emd_dim = emd_dim
 
-        self.pe = PositionalEncoding(emd_dim, max_len=vocab_size, learned=learned_pos_embed)
+        self.pe = PositionalEncoding(
+            emd_dim, 
+            max_len=max(vocab_dec_size, vocab_enc_size), 
+            learned=learned_pos_embed
+        )
 
-        self.in_embedding = nn.Embedding(vocab_size, emd_dim)
-        self.out_embedding = nn.Embedding(vocab_size, emd_dim)
+        self.in_embedding = nn.Embedding(vocab_enc_size, emd_dim)
+        self.out_embedding = nn.Embedding(vocab_dec_size, emd_dim)
 
         self.encoder = Encoder(num_layer, num_head, emd_dim, ffn_hidden_size)
         self.decoder = Decoder(num_layer, num_head, emd_dim, ffn_hidden_size)
 
-        self.linear_proj = nn.Linear(emd_dim, vocab_size)
+        self.linear_proj = nn.Linear(emd_dim, vocab_dec_size)
 
         self.init_weights()
 
